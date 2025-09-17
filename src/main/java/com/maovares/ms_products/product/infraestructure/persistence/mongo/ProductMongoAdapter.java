@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
@@ -44,5 +45,26 @@ public class ProductMongoAdapter implements ProductRepository {
         long totalProducts = mongoTemplate.count(new Query(), ProductDocument.class);
 
         return new PageImpl<>(products, pageable, totalProducts);
+    }
+
+    @Override
+    public Product findProductById(String id) {
+        Query query = new Query(Criteria.where("id").is(id));
+
+        System.out.println("id " + id);
+
+        ProductDocument product = mongoTemplate.findOne(query, ProductDocument.class);
+
+        if (product == null) {
+            return null; // o lanzar una excepción
+        }
+
+        return new Product(
+                product.getId(),
+                product.getPrice(),
+                product.getDescription(),
+                product.getImage(),
+                product.getTitle()
+        );
     }
 }

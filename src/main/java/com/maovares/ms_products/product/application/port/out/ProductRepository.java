@@ -7,6 +7,6 @@ import com.maovares.ms_products.product.domain.model.Product;
 
 public interface ProductRepository {
     Page<Product> findAll(Pageable pageable);
-
+    Product findProductById(String id);
     // count??
 }

@@ -16,15 +16,33 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
 public class ClientCertValidationFilter implements Filter {
-     private static final String EXPECTED_THUMBPRINT = System.getenv("CLIENT_CERT_THUMBPRINT");
+
+    private final boolean certValidationEnabled;
+    private final String expectedThumbprint;
+
+    public ClientCertValidationFilter(boolean certValidationEnabled, String expectedThumbprint) {
+        this.certValidationEnabled = certValidationEnabled;
+        this.expectedThumbprint = expectedThumbprint;
+    }
 
      @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
         HttpServletRequest httpReq = (HttpServletRequest) request;
         String clientIp = getClientIpAddress(httpReq);
-        
+
+        // Si la validación está deshabilitada, permitir el acceso
+        if (!certValidationEnabled) {
+            log.debug("Client certificate validation is disabled, allowing request from IP: {}", clientIp);
+            try {
+                chain.doFilter(request, response);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+
         log.debug("Starting client certificate validation for request from IP: {}", clientIp);
-        
+
         try {
             String certHeader = httpReq.getHeader("X-ARR-ClientCert");
 
@@ -42,13 +60,13 @@ public class ClientCertValidationFilter implements Filter {
             // Calcular thumbprint SHA-1
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             String thumbprint = bytesToHex(md.digest(cert.getEncoded()));
-            
-            log.debug("Certificate thumbprint calculated: {}", thumbprint);
-            log.debug("Expected thumbprint: {}", EXPECTED_THUMBPRINT);
 
-            if (!thumbprint.equalsIgnoreCase(EXPECTED_THUMBPRINT)) {
-                log.error("Invalid client certificate thumbprint for request from IP: {} - Received: {}, Expected: {}", 
-                         clientIp, thumbprint, EXPECTED_THUMBPRINT);
+            log.debug("Certificate thumbprint calculated: {}", thumbprint);
+            log.debug("Expected thumbprint: {}", expectedThumbprint);
+
+            if (!thumbprint.equalsIgnoreCase(expectedThumbprint)) {
+                log.error("Invalid client certificate thumbprint for request from IP: {} - Received: {}, Expected: {}",
+                         clientIp, thumbprint, expectedThumbprint);
                 throw new InvalidCertificateException("Invalid client certificate thumbprint");
             }
 

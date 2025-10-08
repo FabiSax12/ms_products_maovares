@@ -2,6 +2,10 @@ package com.maovares.ms_products.product.infraestructure.web;
 
 import java.util.List;
 
+import com.maovares.ms_products.product.application.port.in.CreateOrderCommand;
+import com.maovares.ms_products.product.domain.model.Order;
+import com.maovares.ms_products.product.infraestructure.web.dto.*;
+import com.maovares.ms_products.product.infraestructure.web.dto.mapper.OrderDtoMapper;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,9 +22,6 @@ import com.maovares.ms_products.product.application.port.in.CreateProductCommand
 import com.maovares.ms_products.product.application.port.in.GetProductQuery;
 import com.maovares.ms_products.product.application.port.in.GetProductsQuery;
 import com.maovares.ms_products.product.domain.model.Product;
-import com.maovares.ms_products.product.infraestructure.web.dto.CreateProductDto;
-import com.maovares.ms_products.product.infraestructure.web.dto.PagedResponseDto;
-import com.maovares.ms_products.product.infraestructure.web.dto.ProductResponseDto;
 import com.maovares.ms_products.product.infraestructure.web.dto.mapper.ProductDtoMapper;
 
 import io.swagger.v3.oas.annotations.Operation;

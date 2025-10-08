@@ -12,7 +12,10 @@ import com.maovares.ms_products.product.domain.model.Product;
 import com.maovares.ms_products.shared.application.port.out.QueueService;
 import com.maovares.ms_products.shared.domain.model.Event;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class CreateProductService implements CreateProductCommand {
 
     private final ProductRepository productRepository;
@@ -25,25 +28,38 @@ public class CreateProductService implements CreateProductCommand {
 
     @Override
     public Product execute(String description, double price, String image, String title) {
-        String id = UUID.randomUUID().toString();
+        log.info("Creating product - Title: {}, Price: {}, Description: {}", title, price, description);
 
-        Product product = new Product(id, price, description, image, title);
-        Product savedProduct = productRepository.save(product);
+        try {
+            String id = UUID.randomUUID().toString();
+            log.debug("Generated product ID: {}", id);
 
-        // Send event to Azure Queue Storage
-        Event.Item item = new Event.Item(savedProduct.getId(), 1);
-        Event event = new Event(
-                UUID.randomUUID().toString(),
-                "vargasarayafabian11@gmail.com",
-                "Fabián Vargas",
-                savedProduct.getPrice(),
-                List.of(item),
-                Instant.now().toString()
-        );
+            Product product = new Product(id, price, description, image, title);
 
-        queueService.sendMessage(event);
+            log.info("Saving product to repository - ID: {}, Title: {}", id, title);
+            Product savedProduct = productRepository.save(product);
 
-        return savedProduct;
+            log.info("Product successfully created and saved - ID: {}, Title: {}",
+                    savedProduct.getId(), savedProduct.getTitle());
+
+            // Send event to Azure Queue Storage
+            Event.Item item = new Event.Item(savedProduct.getId(), 1);
+            Event event = new Event(
+                    UUID.randomUUID().toString(),
+                    "vargasarayafabian11@gmail.com",
+                    "Fabián Vargas",
+                    savedProduct.getPrice(),
+                    List.of(item),
+                    Instant.now().toString()
+            );
+
+            queueService.sendMessage(event);
+
+            return savedProduct;
+        } catch (Exception e) {
+            log.error("Error creating product with title '{}': {}", title, e.getMessage(), e);
+            throw e;
+        }
     }
 
 }

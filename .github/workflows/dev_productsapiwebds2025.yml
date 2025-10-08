@@ -19,6 +19,8 @@ jobs:
       SPRING_PROFILES_ACTIVE: dev
       MONGO_URI: ${{ secrets.MONGO_URI }}
       MONGO_DB: ${{ vars.MONGO_DB }}
+      AZURE_STORAGE_QUEUE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_QUEUE_CONNECTION_STRING }}
+      AZURE_STORAGE_QUEUE_NAME: ${{ vars.AZURE_STORAGE_QUEUE_NAME }}
 
     permissions:
       contents: read #This is required for actions/checkout
@@ -38,6 +40,8 @@ jobs:
           SPRING_PROFILES_ACTIVE: dev
           MONGO_URI: ${{ secrets.MONGO_URI }}
           MONGO_DB: ${{ vars.MONGO_DB }}
+          AZURE_STORAGE_QUEUE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_QUEUE_CONNECTION_STRING }}
+          AZURE_STORAGE_QUEUE_NAME: ${{ vars.AZURE_STORAGE_QUEUE_NAME }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
